@@ -1,6 +1,6 @@
 
 module.exports = function cleanupPlugin(schema, options) {
-  if(options.debug) let chalk = require('chalk')
+  if (options.debug) let chalk = require('chalk')
   if (!options || !options.relations) return new Error('[MongooseCleanUp]: options.relations is required')
   let rel = options.relations
   if (!rel.length) return
