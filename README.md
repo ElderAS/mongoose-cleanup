@@ -27,9 +27,9 @@ YourSchema.plugin(mongooseCleanup, {
   relations: [{ model: 'SomeOtherModel', key: 'author' }],
   debug: true, // Default: false -> If true operations are logged out in your console
 })
-```
 
 let Model = mongoose.model('YourSchema', YourSchema)
+```
 
 ### Important note
 
