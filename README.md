@@ -1,6 +1,6 @@
 # mongoose-cleanup
 
-[![Build Status](https://travis-ci.org/crsten/mongoose-cleanup.svg?branch=master&style=flat-square)](https://travis-ci.org/crsten/mongoose-cleanup)
+[![Build Status](https://travis-ci.org/ElderAS/mongoose-cleanup.svg?branch=master&style=flat-square)](https://travis-ci.org/ElderAS/mongoose-cleanup)
 [![npm](https://img.shields.io/npm/dt/mongoose-cleanup.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-cleanup)
 [![npm](https://img.shields.io/npm/v/mongoose-cleanup.svg?style=flat-square)](https://www.npmjs.com/package/mongoose-cleanup)
 
