@@ -13,22 +13,22 @@
 ### Usage
 
 ```js
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
-const mongooseCleanup = require('mongoose-cleanup')
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const mongooseCleanup = require("mongoose-cleanup");
 
 let YourSchema = new Schema({
   title: String,
   description: String,
-  author: String,
-})
+  author: String
+});
 
 YourSchema.plugin(mongooseCleanup, {
-  relations: [{ model: 'SomeOtherModel', key: 'author' }],
-  debug: true, // Default: false -> If true operations are logged out in your console
-})
+  relations: [{ model: "SomeOtherModel", key: "author" }],
+  debug: true // Default: false -> If true operations are logged out in your console
+});
 
-let Model = mongoose.model('YourSchema', YourSchema)
+let Model = mongoose.model("YourSchema", YourSchema);
 ```
 
 ### Important note
@@ -51,10 +51,37 @@ relations is an `Array` and takes `Objects` like this:
 }
 ```
 
+or this
+
+```js
+{
+  model: 'SomeModel', //Name of the model that has a reference to this model
+  key: 'reference' //Name of the key that holds the relation. You can send an array aswell
+  options: {
+    remove: 'value' // Set this to 'value' if you don't want to remove the whole doc but only the reference
+  }
+}
+```
+
+or this
+
+```js
+{
+  model: 'SomeModel', //Name of the model that has a reference to this model
+  key: { value: 'reference', match: 'inner.value' } // Use this syntax if you want to remove 'reference' if it matches with 'reference.inner.value'
+  options: {
+    remove: 'value' // Set this to 'value' if you don't want to remove the whole doc but only the reference
+  }
+}
+```
+
 ```js
 YourSchema.plugin(mongooseCleanup, {
-  relations: [{ model: 'SomeOtherModel', key: 'author' }, { model: 'RandomModel', key: 'user' }],
-})
+  relations: [
+    { model: "SomeOtherModel", key: "author" },
+    { model: "RandomModel", key: "user" }
+  ]
+});
 ```
 
 #### debug

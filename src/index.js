@@ -1,18 +1,55 @@
-let chalk
+const ObjectId = require("mongoose").Types.ObjectId;
+const { path, pathOr } = require("ramda");
+let chalk;
 
-module.exports = function cleanupPlugin(schema, options) {
-  if (options.debug) chalk = require('chalk')
-  if (!options || !options.relations) return new Error('[MongooseCleanUp]: options.relations is required')
-  let rel = options.relations
-  if (!rel.length) return
+function toArray(val) {
+  return val instanceof Array ? val : [val];
+}
 
-  schema.post('remove', function() {
-    let operations = rel.map(({ model, key }) => {
-      let query = {}
+function removeValue(obj, key, match, id) {
+  let keys = key.split(".");
+  let currentKey = keys.shift();
+  if (!match) match = [];
+  if (typeof match === "string") match = match.split(".");
 
-      if (key instanceof Array) {
-        key.forEach(value => (query[value] = this._id))
-      } else query[key] = this._id
+  if (!keys.length) {
+    if (obj[currentKey] instanceof Array)
+      return (obj[currentKey] = obj[currentKey].filter(
+        item => !ObjectIdCondition(path(match, item), id)
+      ));
+    if (ObjectIdCondition(path(match, obj[currentKey]), id))
+      return (obj[currentKey] = undefined);
+  }
+
+  return toArray(obj[currentKey]).forEach(item =>
+    removeValue(item, keys.join("."), match, id)
+  );
+}
+
+function ObjectIdCondition(obj, id) {
+  let target = pathOr(obj, ["_id"], obj);
+  return target instanceof ObjectId && target.equals(id);
+}
+
+module.exports = function cleanupPlugin(schema, pluginOptions) {
+  if (pluginOptions.debug) chalk = require("chalk");
+  if (!pluginOptions || !pluginOptions.relations)
+    return new Error("[MongooseCleanUp]: options.relations is required");
+  let rel = pluginOptions.relations;
+  if (!rel.length) return;
+
+  schema.post("remove", function() {
+    rel.map(({ model, key, options = {} }) => {
+      let query = {};
+
+      let keys = key instanceof Array ? key : [key];
+      keys.forEach(entry => {
+        let value =
+          typeof entry === "string"
+            ? entry
+            : [entry.value, entry.match].filter(Boolean).join(".");
+        query[value] = this._id;
+      });
 
       return this.model(model)
         .find(query)
@@ -21,20 +58,59 @@ module.exports = function cleanupPlugin(schema, options) {
             items.map(
               item =>
                 new Promise((resolve, reject) => {
-                  item.remove((err, item) => {
-                    if (err) {
-                      if (options.debug)
-                        console.log(chalk`[MongooseCleanUp]: {bold.red Error at remove: } ${model} ${item.id}`)
-                      return reject(err)
-                    }
+                  if (options.remove === "value") {
+                    keys.forEach(entry =>
+                      removeValue(
+                        item,
+                        pathOr(entry, ["value"], entry),
+                        path(["match"], entry),
+                        this._id
+                      )
+                    );
+                    item.save((err, item) => {
+                      if (err) {
+                        if (pluginOptions.debug)
+                          console.log(
+                            chalk`[MongooseCleanUp]: {bold.red Error at remove: } ${model} ${
+                              item.id
+                            }`
+                          );
+                        return reject(err);
+                      }
 
-                    if (options.debug) console.log(chalk`[MongooseCleanUp]: {bold.green Removed: } ${model} ${item.id}`)
-                    return item
-                  })
-                }),
-            ),
-          ),
-        )
-    })
-  })
-}
+                      if (pluginOptions.debug)
+                        console.log(
+                          chalk`[MongooseCleanUp]: {bold.green Removed value: } ${model} ${
+                            item.id
+                          }`
+                        );
+                      return item;
+                    });
+                  } else {
+                    item.remove((err, item) => {
+                      if (err) {
+                        if (pluginOptions.debug)
+                          console.log(
+                            chalk`[MongooseCleanUp]: {bold.red Error at remove: } ${model} ${
+                              item.id
+                            }`
+                          );
+                        return reject(err);
+                      }
+
+                      if (pluginOptions.debug)
+                        console.log(
+                          chalk`[MongooseCleanUp]: {bold.green Removed: } ${model} ${
+                            item.id
+                          }`
+                        );
+                      return item;
+                    });
+                  }
+                })
+            )
+          )
+        );
+    });
+  });
+};
