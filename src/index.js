@@ -21,6 +21,13 @@ function removeValue(obj, key, match, id) {
   )
 }
 
+function BuildQuery(query, entry, id) {
+  if (typeof entry === 'string') entry = { value: entry }
+  let key = [entry.value, entry.match].filter(Boolean).join('.')
+
+  query[key] = id
+}
+
 module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
   let { relations, debug } = pluginOptions
 
@@ -32,11 +39,7 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
       let query = {}
       let keys = ConvertToArray(key)
 
-      keys.forEach(entry => {
-        let value =
-          typeof entry === 'string' ? entry : [entry.value, entry.match].filter(Boolean).join('.')
-        query[value] = this._id
-      })
+      keys.forEach(entry => BuildQuery(query, entry, this._id))
 
       return this.model(model)
         .find(query)
