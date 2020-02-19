@@ -21,7 +21,7 @@ function removeValue(obj, key, match, id) {
   )
 }
 
-function BuildQuery(query, entry, id) {
+function BuildKeyQuery(query, entry, id) {
   if (typeof entry === 'string') entry = { value: entry }
   let key = [entry.value, entry.match].filter(Boolean).join('.')
 
@@ -39,7 +39,7 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
       let query = {}
       let keys = ConvertToArray(key)
 
-      keys.forEach(entry => BuildQuery(query, entry, this._id))
+      keys.forEach(val => BuildKeyQuery(query, val, this._id))
 
       return this.model(model)
         .find(query)
