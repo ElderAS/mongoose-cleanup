@@ -22,7 +22,7 @@ function removeValue(obj, key, match, id) {
 }
 
 module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
-  let { relations } = pluginOptions
+  let { relations, debug } = pluginOptions
 
   if (!relations) return new Error('[MongooseCleanUp]: relations is required')
   if (!relations.length) return
@@ -56,14 +56,14 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
                     )
                     item.save((err, item) => {
                       if (err) {
-                        if (pluginOptions.debug)
+                        if (debug)
                           console.log(
                             chalk`[MongooseCleanUp]: {bold.red Error at remove: } ${model} ${item.id}`,
                           )
                         return reject(err)
                       }
 
-                      if (pluginOptions.debug)
+                      if (debug)
                         console.log(
                           chalk`[MongooseCleanUp]: {bold.green Removed value: } ${model} ${item.id}`,
                         )
@@ -72,14 +72,14 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
                   } else {
                     item.remove((err, item) => {
                       if (err) {
-                        if (pluginOptions.debug)
+                        if (debug)
                           console.log(
                             chalk`[MongooseCleanUp]: {bold.red Error at remove: } ${model} ${item.id}`,
                           )
                         return reject(err)
                       }
 
-                      if (pluginOptions.debug)
+                      if (debug)
                         console.log(
                           chalk`[MongooseCleanUp]: {bold.green Removed: } ${model} ${item.id}`,
                         )
