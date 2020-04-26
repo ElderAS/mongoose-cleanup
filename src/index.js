@@ -11,12 +11,12 @@ function removeValue(obj, key, match, id) {
   if (!keys.length) {
     if (obj[currentKey] instanceof Array)
       return (obj[currentKey] = obj[currentKey].filter(
-        item => !CompareObjectId(path(match, item), id),
+        (item) => !CompareObjectId(path(match, item), id),
       ))
     if (CompareObjectId(path(match, obj[currentKey]), id)) return (obj[currentKey] = undefined)
   }
 
-  return ConvertToArray(obj[currentKey]).forEach(item =>
+  return ConvertToArray(obj[currentKey]).forEach((item) =>
     removeValue(item, keys.join('.'), match, id),
   )
 }
@@ -34,22 +34,25 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
   if (!relations) return new Error('[MongooseCleanUp]: relations is required')
   if (!relations.length) return
 
-  schema.post('remove', function() {
+  schema.post('remove', function () {
     relations.map(({ model, key, options = {} }) => {
       let query = {}
       let keys = ConvertToArray(key)
 
-      keys.forEach(val => BuildKeyQuery(query, val, this._id))
+      keys.forEach((val) => BuildKeyQuery(query, val, this._id))
 
       return this.model(model)
         .find(query)
-        .then(items =>
+        .then((items) =>
           Promise.all(
             items.map(
-              item =>
+              (item) =>
                 new Promise((resolve, reject) => {
-                  if (options.remove === 'value') {
-                    keys.forEach(entry =>
+                  let removeType =
+                    typeof options.remove === 'function' ? options.remove(item) : options.remove
+
+                  if (removeType === 'value') {
+                    keys.forEach((entry) =>
                       removeValue(
                         item,
                         pathOr(entry, ['value'], entry),
@@ -70,7 +73,7 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
                         console.log(
                           chalk`[MongooseCleanUp]: {bold.green Removed value: } ${model} ${item.id}`,
                         )
-                      return item
+                      return resolve(item)
                     })
                   } else {
                     item.remove((err, item) => {
@@ -86,7 +89,7 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
                         console.log(
                           chalk`[MongooseCleanUp]: {bold.green Removed: } ${model} ${item.id}`,
                         )
-                      return item
+                      return resolve(item)
                     })
                   }
                 }),
