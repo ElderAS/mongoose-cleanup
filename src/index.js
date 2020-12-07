@@ -39,7 +39,7 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
       let query = {}
       let keys = ConvertToArray(key)
 
-      keys.forEach((val) => BuildKeyQuery(query, val, this._id))
+      keys.forEach((val) => BuildKeyQuery(query, val, this._id.toString()))
 
       return this.model(model)
         .find(query)
