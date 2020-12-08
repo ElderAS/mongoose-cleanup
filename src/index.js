@@ -60,6 +60,7 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
                         this._id,
                       ),
                     )
+
                     item.save((err, item) => {
                       if (err) {
                         if (debug)
