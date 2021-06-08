@@ -61,11 +61,11 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
                       ),
                     )
 
-                    item.save((err, item) => {
+                    item.save((err) => {
                       if (err) {
                         if (debug)
                           console.log(
-                            chalk`[MongooseCleanUp]: {bold.red Error at remove: } ${model} ${item.id}`,
+                            chalk`[MongooseCleanUp]: {bold.red Error at remove value: } ${model} ${item.id}`,
                           )
                         return reject(err)
                       }
@@ -77,7 +77,7 @@ module.exports = function cleanupPlugin(schema, pluginOptions = {}) {
                       return resolve(item)
                     })
                   } else {
-                    item.remove((err, item) => {
+                    item.remove((err) => {
                       if (err) {
                         if (debug)
                           console.log(
